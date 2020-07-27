@@ -9,11 +9,10 @@ from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.core.validators import validate_email
-from .authentication import ToDoTokenAuthentication
 from . import utils
 import jwt
-from .models import TaskList, Task, ListAccess
 from django.core.exceptions import ObjectDoesNotExist
+from .models import Task, TaskList, ListAccess
 
 class HelloWorld(APIView):
     def get(self, request):
