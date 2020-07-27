@@ -51,3 +51,22 @@ class Register(APIView):
         except Exception as exp:
             print("Unexpected exception ocurred: "+str(exp))
             return Response({"error": "Unexpected error occurred, please report this to Admin"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class Login(APIView):
+    authentication_classes = (BasicAuthentication,)
+    permission_classes = (IsAutheticated,)
+
+    def post(self,request):
+        access_token, refresh_token = utils.generate_tokens(request.user)
+
+        if access_token is None or refresh_token is None:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        response = {
+            'access_token': access_token,
+            'expires_in': 3600,
+            'token_type': "bearer",
+            'refresh_token': refresh_token
+        }
+
+        return Response(response)
