@@ -8,7 +8,8 @@ class TaskList(models.Model):
 
 class Task(models.Model):
     id = models.AutoField(primary_key=True)
-    list = models.ForeignKey('List', on_delete=models.CASCADE) #Foreign key relation to list
+    list = models.ForeignKey('TaskList', on_delete=models.CASCADE) #Foreign key relation to list
+    
     name = models.CharField(max_length=50)
     done = models.BooleanField(default=False)
     description = models.TextField()
