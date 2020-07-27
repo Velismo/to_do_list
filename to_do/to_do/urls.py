@@ -22,5 +22,10 @@ urlpatterns = [
     path('hello_world', views.HelloWorld.as_view()),
     # Paths for login
     re_path(r'^login(?:\/)?$', views.Login.as_view()),
+    re_path(r'^login/refresh(?:\/)?$', views.LoginRefresh.as_view()),
     path('login/register', views.Register.as_view())
+
+    # Paths for Lists
+    re_path(r'^lists/add(?:\/)?$', views.ListAdd.as_view()),
+    
 ]
