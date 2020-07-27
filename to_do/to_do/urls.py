@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('hello_world', views.HelloWorld.as_view()),
     # Paths for login
+    re_path(r'^login(?:\/)?$', view.Login.as_view()),
     path('login/register', views.Register.as_view())
 ]
