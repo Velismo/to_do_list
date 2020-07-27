@@ -12,3 +12,14 @@ class Task(models.Model):
     name = models.CharField(max_length=50)
     done = models.BooleanField(default=False)
     description = models.TextField()
+
+class ListAccess(models.Model):
+
+    #Foreign key relation to user model
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    #Foreign key relaiton to list
+    list = models.ForeignKey('Tasklist', on_delete=models.CASCADE)
+
+    #This field provides access level of a user on a list
+    role = models.CharField(max_length=5)

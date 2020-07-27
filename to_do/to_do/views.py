@@ -1,6 +1,19 @@
 #views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.core.validators import validate_email
+from .authentication import ToDoTokenAuthentication
+from . import utils
+import jwt
+from .models import TaskList, Task, ListAccess
+from django.core.exceptions import ObjectDoesNotExist
 
 class HelloWorld(APIView):
     def get(self, request):
@@ -54,7 +67,7 @@ class Register(APIView):
 
 class Login(APIView):
     authentication_classes = (BasicAuthentication,)
-    permission_classes = (IsAutheticated,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self,request):
         access_token, refresh_token = utils.generate_tokens(request.user)
