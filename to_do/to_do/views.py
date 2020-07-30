@@ -307,4 +307,46 @@ class TaskFetch(APIView):
 
             # Fetching list object
             try:
-                task_list_obj = Task
+                task_list_obj = TaskList.objects.get(id=list_id)
+            except ObjectDoesNotExist:
+                raise ValueError("Invalid list_id")
+
+            #checking if the user on the given list
+            try:
+                list_perm_qs = ListAccess.objects.get(user=request.user, list=task_list_obj)
+            except ObjectDoesNotExist:
+                raise PermissionError("You do not have permission to access this list")
+
+            # fetching task
+            tasks = Task.objects.filter(list=task_list_obj).values()
+
+            resp_dict['status'] = 'success'
+            resp_dict['message'] = 'Fetched task successfully'
+            resp_dict['data'] = tasks
+            resp = Response(resp_dict)
+            resp.status_code = 200
+
+        except PermissionError as pe:
+            resp_dict['status'] = 'failed'
+            resp_dict['message'] = pe.__str__()
+            resp_dict['data'] = None
+            resp = Response(resp_dict)
+            resp.status_code = 403
+
+        except ValueError as ve:
+            resp_dict['status'] = 'failed'
+            resp_dict['message'] = ve.__str__()
+            resp_dict['data'] = None
+            resp = Response(resp_dict)
+            resp.status_code = 400
+
+        except Exception as e:
+            resp_dict['status'] = 'failed'
+            resp_dict['message'] = "Something went wrong. Error: "+e.__str__()
+            resp_dict['data'] = None
+            resp = Response(resp_dict)
+            resp.status_code = 500
+
+        return resp
+
+
