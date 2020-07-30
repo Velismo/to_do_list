@@ -200,3 +200,111 @@ class ListAdd(APIView):
             resp.data = resp_dict
 
         return resp
+
+
+class ListFetch(APIView):
+    authentication_classes = (ToDoTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self,request):
+        resp_dict = {
+            'status': '',
+            'message': '',
+            'data': None
+        }
+
+        try:
+            list_ids = ListAccess.objects.values_list('list').filter(user=request.user)
+            lists = TaskList.objects.filter(id_in=list_ids).values()
+            resp_dict['status'] = 'success'
+            resp_dict['message'] = 'Retrieved the list of todo lists'
+            resp_dict['data'] = lists
+
+        except Exception as e:
+            print(e)
+            resp_dict['status'] = 'Failed'
+            resp_dict['message'] = 'SOmething went wrong while fetching data. Error: '+e.__str__()
+
+        return Response(resp_dict)
+
+
+class TaskAdd(APIView):
+    authetication_classes = (ToDoTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def post(sefl, request):
+        resp_dict = {
+            'status': None,
+            'message': None,
+            'data': None
+        }
+
+        req_list_id = request.data.get("list_id")
+        req_task_name = request.data.get("name")
+        req_task_desc = request.data.get('description') if request.data.get('description', None) else ''
+
+        if req_list_id and TaskList.objects.filter(id=req_list_id).exists() and \
+                req_task_name and req_task_name != '':
+            try:
+                task_list = TaskList.objects.get(id=req_list_id)
+
+                user_perm = ListAccess.objects.filter(user=request.user, list=task_list)
+
+                if user_perm.count() != 1 or user_perm.first().role != 'owner':
+                    raise PermissionError("You do not have permissions to edit this list")
+                new_task = Task(name=req_task_name, list=task_list, description=req_task_desc)
+                new_task.save()
+
+                resp_dict['status'] = 'success'
+                resp_dict['message'] = 'Task creation successful'
+                resp_dict['data'] = {
+                    "name": new_task.name, 
+                    "description": new_task.description, 
+                    "done": new_task.done, 
+                    "list_id": new_task.list.id
+                    }
+
+            except PermissionError as pe:
+                resp_dict['status'] = "failed"
+                resp_dict['message'] = pe.__str__()
+                resp_dict['data'] = None
+                resp = Response(resp_dict)
+                resp.status_code = 403
+            except Exception as e:
+                resp_dict['status'] = 'failed'
+                resp_dict['message'] = "Something went wrong. Error: "+e.__str__()
+                resp_dict['data'] = None
+                resp = Response(resp_dict)
+                resp.status_code = 500
+        else:
+            resp_dict['status'] = "failed"
+            resp_dict['message'] = "Invalida name or list_id passed"
+            resp_dict['data'] = None
+            resp = Response(resp_dict)
+            resp.status_code = 400
+
+        return resp
+
+
+class TaskFetch(APIView):
+    authentication_classes = (ToDoTokenAuthentication,)
+    permission_Classes = (IsAuthenticated,)
+
+    def get(self, request):
+
+        resp_dict = {
+            'status': None,
+            'message': None,
+            'data': None
+        }
+
+        try:
+            list_id = request.query_params.get("list_id", None)
+
+            # Checking if the list id is provided
+            if list_id is None or list_id == '':
+                raise ValueError("Invlaid list_id")
+
+            # Fetching list object
+            try:
+                task_list_obj = Task
