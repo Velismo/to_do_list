@@ -232,7 +232,7 @@ class TaskAdd(APIView):
     authetication_classes = (ToDoTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    def post(sefl, request):
+    def post(self, request):
         resp_dict = {
             'status': None,
             'message': None,
